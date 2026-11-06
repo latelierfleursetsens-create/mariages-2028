@@ -1,0 +1,108 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Installation — Mariages 2028</title><style>body{font:15px/1.75 Arial,sans-serif;color:#3f3135;background:#fbf8f4;margin:0}main{max-width:900px;margin:25px auto;padding:35px;background:white;border:1px solid #e8dcd5;border-radius:12px}h1,h2{font-family:Georgia,serif;color:#6f2638;line-height:1.3}h1{font-size:32px}h2{margin-top:40px;font-size:25px}li{padding:5px}code{font-size:13px;background:#f5ede9;padding:2px 4px;overflow-wrap:anywhere}pre{background:#f5ede9;padding:15px;overflow:auto}pre code{background:none}a{color:#6f2638}table{width:100%;border-collapse:collapse;font-size:13px}td{border:1px solid #e8dcd5;padding:10px;vertical-align:top}tr:first-child{background:#f5ede9;font-weight:bold}.table{overflow:auto}@media(max-width:600px){main{margin:0;padding:25px 18px;border:0}h1{font-size:28px}}</style></head><body><main><h1>Liste d’attente Mariages 2028 — L’Atelier Fleurs &amp; Sens</h1>
+<p>Cette version est prévue pour un dépôt GitHub et GitHub Pages. Les clientes remplissent le formulaire sans créer de compte. Le suivi est disponible dans <code>gestion.html</code>, après connexion Firebase de l’atelier.</p>
+<p><strong>À lire avant de partager le lien : publier les fichiers sur GitHub ne suffit pas pour enregistrer les coordonnées. Il faut aussi installer le service Cloudflare fourni et renseigner son adresse dans <code>js/config.js</code>.</strong> Tant que cette adresse reste vide, le bouton d’inscription reste désactivé : aucune confirmation fictive n’est affichée.</p>
+<h2>Les fichiers</h2>
+<div class="table"><table><tbody>
+<tr><td>Fichier ou dossier</td><td>Utilisation</td></tr>
+<tr><td><code>index.html</code></td><td>Formulaire public et informations sur la liste d’attente</td></tr>
+<tr><td><code>gestion.html</code></td><td>Connexion et tableau privé de suivi</td></tr>
+<tr><td><code>confidentialite.html</code></td><td>Explication de l’utilisation des coordonnées</td></tr>
+<tr><td><code>assets/</code></td><td>Logo, icône, présentation</td></tr>
+<tr><td><code>js/config.js</code></td><td>Adresse du service Cloudflare et configuration Firebase existante</td></tr>
+<tr><td><code>js/waitlist.js</code></td><td>Envoi du formulaire et confirmation</td></tr>
+<tr><td><code>js/gestion.js</code></td><td>Tableau, recherche, notes, statuts, suppression et export Excel</td></tr>
+<tr><td><code>backend/worker.mjs</code></td><td>Service complet à installer dans un <strong>nouveau</strong> Worker Cloudflare</td></tr>
+<tr><td><code>backend/schema.sql</code></td><td>Tables à créer dans une <strong>nouvelle</strong> base D1</td></tr>
+<tr><td><code>backend/wrangler.exemple.jsonc</code></td><td>Configuration facultative pour une installation en ligne de commande</td></tr>
+<tr><td><code>INSTALLATION.html</code></td><td>Guide illustré par des tableaux, à ouvrir dans votre navigateur</td></tr>
+<tr><td><code>tests/worker.test.mjs</code></td><td>Tests automatiques sans envoi d’e-mail réel</td></tr>
+</tbody></table></div>
+<h2>1. Publier les pages sur GitHub</h2>
+<ol>
+<li>Décompressez l’archive.</li>
+<li>Créez un <strong>nouveau dépôt</strong>, par exemple <code>mariages-2028</code>.</li>
+<li>Ajoutez le <strong>contenu du dossier décompressé</strong> à la racine du dépôt. Le fichier <code>index.html</code> doit être visible directement à la racine, au même niveau que <code>gestion.html</code>, <code>assets</code> et <code>js</code>.</li>
+<li>Dans <strong>Settings &gt; Pages</strong>, choisissez <strong>Deploy from a branch</strong>, la branche <code>main</code> et <strong>/ (root)</strong>, puis <strong>Save</strong>.</li>
+<li>Copiez l’adresse affichée par GitHub Pages. Elle ressemble à <code>https://VOTRE-COMPTE.github.io/mariages-2028/</code>.</li>
+</ol>
+<p>Gardez le dépôt de votre espace mariage actuel tel quel : ce projet utilise un nouveau dépôt.</p>
+<h2>2. Créer la base des inscriptions dans Cloudflare</h2>
+<ol>
+<li>Ouvrez votre compte Cloudflare.</li>
+<li>Dans <strong>Storage &amp; databases &gt; D1</strong> (le libellé peut varier), créez une base nommée, par exemple, <code>mariages-2028</code>.</li>
+<li>Ouvrez la console SQL de cette <strong>nouvelle base</strong>.</li>
+<li>Copiez et exécutez le contenu de <code>backend/schema.sql</code>, <strong>une seule fois</strong>.</li>
+</ol>
+<p>Les tables créées sont <code>registrations</code>, <code>notification_emails</code> et <code>rate_limits</code>. Les coordonnées sont enregistrées dans D1, jamais dans le dépôt GitHub. Les règles Firestore de votre espace mariage existant n’ont pas besoin d’être modifiées.</p>
+<h2>3. Installer le service Cloudflare</h2>
+<ol>
+<li>Dans <strong>Workers &amp; Pages</strong>, créez un <strong>nouveau Worker</strong>, par exemple <code>atelier-fleurs-attente2028</code>.</li>
+<li>Ouvrez l’éditeur de code et remplacez l’exemple par <strong>tout le contenu de <code>backend/worker.mjs</code></strong>. Ce fichier est autonome : il n’y a pas de dépendance à installer.</li>
+<li>Enregistrez et déployez.</li>
+<li>Ajoutez une liaison D1 dans les paramètres du Worker : <strong>nom de la variable <code>DB</code></strong>, puis sélectionnez la base créée à l’étape précédente.</li>
+<li>Dans les variables du Worker, ajoutez les valeurs suivantes, puis redéployez.</li>
+</ol>
+<div class="table"><table><tbody>
+<tr><td>Nom exact</td><td>Valeur à saisir</td></tr>
+<tr><td><code>ALLOWED_ORIGINS</code></td><td>L’origine du site, <strong>sans chemin et sans barre finale</strong>. Exemple : <code>https://VOTRE-COMPTE.github.io</code></td></tr>
+<tr><td><code>PUBLIC_SITE_URL</code></td><td>L’adresse <strong>complète</strong> du dossier publié, avec la barre finale. Exemple : <code>https://VOTRE-COMPTE.github.io/mariages-2028/</code></td></tr>
+<tr><td><code>ADMIN_EMAILS</code></td><td><code>latelierfleursetsens@gmail.com</code></td></tr>
+</tbody></table></div>
+<p>Les exemples <code>VOTRE-COMPTE</code> doivent être remplacés par votre vraie adresse. Si vous autorisez plusieurs origines ou comptes administrateurs, séparez les valeurs par une virgule. Une adresse administratrice doit correspondre à un compte Firebase dont l’adresse e-mail est vérifiée.</p>
+<p>Le projet Firebase est déjà celui de votre espace mariage : <code>l-atelier-fleurs-et-sens</code>. Ses identifiants publics sont repris dans les fichiers. Il n’y a aucun mot de passe ni clé privée à ajouter au dépôt. Si la clé API Firebase a une restriction empêchant les appels serveur à Identity Toolkit, utilisez une configuration compatible côté Worker ; ne retirez pas de protection au hasard.</p>
+<p>Les e-mails utilisent votre service existant <code>atelier-fleurs-mail.latelierfleursetsens.workers.dev</code> : ne remplacez pas son code. La notification atelier est adressée à <code>latelierfleursetsens@gmail.com</code>.</p>
+<h2>4. Relier le formulaire au Worker</h2>
+<ol>
+<li>Copiez l’adresse réelle du <strong>nouveau Worker</strong> donnée par Cloudflare.</li>
+<li>Dans GitHub, ouvrez <code>js/config.js</code> et remplacez :</li>
+</ol>
+<pre><code>
+API_URL: &quot;&quot;,
+
+</code></pre>
+<p>par l’adresse copiée, par exemple :</p>
+<pre><code>
+API_URL: &quot;https://ADRESSE-REELLE-DU-WORKER.workers.dev&quot;,
+
+</code></pre>
+<ol>
+<li>Enregistrez la modification dans GitHub.</li>
+<li>Dans votre navigateur, ouvrez l’adresse du Worker suivie de <code>/health</code>. Le résultat attendu est <code>{&quot;ok&quot;:true,&quot;service&quot;:&quot;Mariages 2028&quot;}</code>. Si ce n’est pas le cas, vérifiez la liaison <code>DB</code>, les tables et les variables du Worker.</li>
+</ol>
+<h2>5. Autoriser votre connexion au tableau privé</h2>
+<ol>
+<li>Ouvrez <strong>Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains</strong>.</li>
+<li>Ajoutez le <strong>nom d’hôte</strong> du site GitHub, par exemple <code>VOTRE-COMPTE.github.io</code>, sans <code>https://</code> et sans chemin.</li>
+<li>Vérifiez que la connexion Google est activée dans les méthodes de connexion, comme pour votre espace mariage actuel.</li>
+<li>Ouvrez votre site, puis cliquez sur <strong>Espace Élodie</strong> en bas de page.</li>
+<li>Connectez-vous avec le compte Google <strong>latelierfleursetsens@gmail.com</strong>. Un autre compte n’aura pas accès aux fiches, sauf si vous l’ajoutez explicitement à <code>ADMIN_EMAILS</code> dans le Worker.</li>
+</ol>
+<p>La connexion e-mail/mot de passe fonctionne aussi pour un compte Firebase existant dont l’adresse est vérifiée. Il ne s’agit pas nécessairement du mot de passe de votre boîte mail. Le site ne propose pas la création publique d’un compte administrateur.</p>
+<p>L’adresse <code>gestion.html</code> peut être ouverte par une visiteuse, mais aucun contact n’est fourni sans vérification de son identité et de son autorisation côté serveur.</p>
+<h2>6. Faire une inscription d’essai avant de partager le lien</h2>
+<ol>
+<li>Inscrivez-vous avec vos propres coordonnées, une date de 2028 et un nom mentionnant « TEST ».</li>
+<li>Vérifiez la confirmation à l’écran : reprise de contact au <strong>printemps 2027</strong> ; aucune date réservée.</li>
+<li>Vérifiez la réception de l’e-mail cliente et de la notification atelier, y compris dans les indésirables.</li>
+<li>Connectez-vous à <code>gestion.html</code> : la fiche doit être visible.</li>
+<li>Essayez le statut, les notes et l’export Excel.</li>
+<li>Supprimez la fiche d’essai quand les vérifications sont terminées.</li>
+</ol>
+<p>Une coupure du service e-mail ne supprime pas une fiche enregistrée. Le tableau indique les envois à vérifier et permet de relancer ceux qui ne sont pas confirmés. Vérifiez votre messagerie avant une relance, car un délai réseau peut survenir après la réception effective d’un e-mail.</p>
+<h2>Domaine personnalisé : facultatif</h2>
+<p>Commencez avec l’adresse GitHub Pages. Vous pourrez ensuite utiliser un sous-domaine, par exemple <code>mariages2028.latelierfleursetsens.fr</code>, après configuration dans GitHub Pages et dans les DNS de votre domaine.</p>
+<p>Si vous changez d’adresse, mettez aussi à jour <code>PUBLIC_SITE_URL</code>, <code>ALLOWED_ORIGINS</code> et les domaines autorisés Firebase. Aucun fichier <code>CNAME</code> actif n’est inclus pour ne pas imposer un domaine non configuré.</p>
+<h2>Contrôles réalisés</h2>
+<ol>
+<li>Syntaxe des scripts vérifiée.</li>
+<li>14 tests automatiques du service validés avec une base SQLite et des services e-mail/Firebase simulés : enregistrement, doublons, contrôles de saisie, consentement, autorisation, export, suppression et relance d’e-mails.</li>
+<li>Vérification des liens relatifs et des éléments requis par les scripts.</li>
+</ol>
+<p>Le fonctionnement réel de votre nouveau Worker, la réception des e-mails et la connexion sur votre domaine doivent être testés <strong>après votre installation</strong>. Aucune inscription réelle ni aucun e-mail d’essai n’ont été créés pendant la préparation de cette archive.</p>
+<p>Pour relancer les tests, utiliser Node.js 24 puis <code>node --test tests/worker.test.mjs</code>.</p>
+<h2>Références techniques officielles</h2>
+<ol>
+<li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site">Publication GitHub Pages</a></li>
+<li><a href="https://developers.cloudflare.com/d1/get-started/">Base D1 et liaison au Worker</a></li>
+<li><a href="https://firebase.google.com/docs/reference/rest/auth#section-get-account-info">Firebase Auth REST : informations associées à un ID token</a></li>
+</ol></main></body></html>

@@ -1,0 +1,17 @@
+{
+  // Facultatif : copie de travail pour une installation avec Wrangler.
+  // Compléter database_id et les vraies adresses avant de déployer.
+  "name": "atelier-fleurs-attente2028",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-01",
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "mariages-2028",
+    "database_id": "REMPLACER_PAR_IDENTIFIANT_D1"
+  }],
+  "vars": {
+    "ALLOWED_ORIGINS": "https://VOTRE-COMPTE.github.io",
+    "PUBLIC_SITE_URL": "https://VOTRE-COMPTE.github.io/mariages-2028/",
+    "ADMIN_EMAILS": "latelierfleursetsens@gmail.com"
+  }
+}
