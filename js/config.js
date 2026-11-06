@@ -1,6 +1,6 @@
 // À compléter après la création du Worker Cloudflare. Aucun mot de passe ici.
 window.MARIAGES_2028 = {
-  API_URL: "",
+  API_URL: "https://broad-pine-7f6catelier-fleurs-attente2028.latelierfleursetsens.workers.dev",
   firebase: {
     apiKey: "AIzaSyCPuUcFt99zQsUI1lBDSEZkX-RJHtgs5BY",
     authDomain: "l-atelier-fleurs-et-sens.firebaseapp.com",
